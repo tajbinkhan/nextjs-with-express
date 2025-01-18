@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { PasswordInput } from "@/components/ui/password-input";
 
+import { apiRoutePrefix } from "@/core/constant";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRoute } from "@/routes/routes";
 import { requestUser } from "@/server/request-auth";
@@ -44,13 +45,20 @@ export default function LoginForm() {
 
 	const isSubmitting = form.formState.isSubmitting;
 
+	const handleGoogleLogin = async () => {
+		try {
+			window.location.href = apiRoutePrefix + apiRoute.googleLogin;
+		} catch (error: any) {
+			console.log("Google login error:", error);
+		}
+	};
+
 	const onSubmit = async (data: LoginFormSchemaType) => {
 		await requestUser(data.username, data.password);
 		await axiosApi
 			.post(apiRoute.login, data, { withCredentials: true })
 			.then(response => {
 				setUser(response.data.data.user);
-				console.log("response", response.headers["set-cookie"]);
 			})
 			.catch(error => {
 				console.log("error", error);
@@ -99,7 +107,7 @@ export default function LoginForm() {
 				<LoadingButton isLoading={isSubmitting} loadingText="Logging In..." className="w-full">
 					Login
 				</LoadingButton>
-				<Button variant="outline" className="w-full" type="button">
+				<Button variant="outline" className="w-full" type="button" onClick={handleGoogleLogin}>
 					Login with Google
 				</Button>
 			</form>

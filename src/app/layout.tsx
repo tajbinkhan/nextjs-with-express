@@ -4,7 +4,8 @@ import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
-import { AuthProvider } from "@/providers/auth-provider";
+import SessionProvider from "@/providers/session-provider";
+import { SocketProvider } from "@/providers/socket-provider";
 
 const poppins = Poppins({
 	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -22,11 +23,13 @@ export const metadata: Metadata = {
 	description: "Authentication With Express"
 };
 
-export default function RootLayout({ children }: Readonly<GlobalLayoutProps>) {
+export default async function RootLayout({ children }: Readonly<GlobalLayoutProps>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={cn(poppins.variable, "antialiased")} suppressHydrationWarning>
-				<AuthProvider>{children}</AuthProvider>
+				<SessionProvider>
+					<SocketProvider>{children}</SocketProvider>
+				</SessionProvider>
 			</body>
 		</html>
 	);

@@ -1,24 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import axiosApi from "@/lib/axios-config";
 
 import { AuthContext } from "@/context/auth-context";
 import { apiRoute } from "@/routes/routes";
-import { fetchUser } from "@/server/fetch-auth";
 
-export const AuthProvider = ({ children }: GlobalLayoutProps) => {
-	const [user, setUser] = useState<User | null>(null);
+interface AuthProviderProps extends GlobalLayoutProps {
+	userData: User | null;
+	children: React.ReactNode;
+}
 
-	useEffect(() => {
-		const fetchUserData = async () => {
-			const user = await fetchUser();
-			setUser(user);
-		};
+export const AuthProvider = ({ children, userData }: AuthProviderProps) => {
+	const [user, setUser] = useState<User | null>(userData);
 
-		fetchUserData();
-	}, []);
+	// useEffect(() => {
+	// 	const fetchUserData = async () => {
+	// 		const user = await fetchUser();
+	// 		setUser(user);
+	// 	};
+
+	// 	fetchUserData();
+	// }, []);
 
 	const logout = async () => {
 		await axiosApi

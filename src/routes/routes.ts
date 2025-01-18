@@ -16,6 +16,7 @@ export const route = {
 
 export const apiRoute = {
 	login: "/auth/login",
+	googleLogin: "/auth/login/google",
 	register: "/auth/register",
 	logout: "/auth/logout",
 	me: "/auth/me",

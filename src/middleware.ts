@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -26,10 +27,19 @@ export async function middleware(request: NextRequest) {
 	const { nextUrl } = request;
 	const appPrefixPathname = `${appRoutePrefix}${nextUrl.pathname}`;
 
+	const cookieStore = await cookies();
+
 	const isPrivateRoute = staticPrivateRoutes.includes(nextUrl.pathname);
 	const isProtectedRoute = staticProtectedRoutes.includes(nextUrl.pathname);
 
-	const getSearchParams = nextUrl.searchParams.get("redirect");
+	const getRedirectUrl = request.cookies.get("redirect")?.value;
+	const redirectFromGoogle = nextUrl.searchParams.get("success") === "Google";
+
+	if (redirectFromGoogle) {
+		if (getRedirectUrl) return NextResponse.redirect(new URL(getRedirectUrl, nextUrl));
+
+		return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+	}
 
 	/**
 	 * if the route is private and the user is logged in, then allow access
@@ -37,8 +47,9 @@ export async function middleware(request: NextRequest) {
 	 */
 	if (isPrivateRoute) {
 		// redirect to the login page if the user is not logged in
-		const accessedRoute = encodeURIComponent(appPrefixPathname);
-		const redirect = new URL(`${DEFAULT_LOGIN_URL}?redirect=${accessedRoute}`, nextUrl);
+		const accessedRoute = encodeURI(appPrefixPathname);
+		cookieStore.set("redirect", accessedRoute);
+		const redirect = new URL(DEFAULT_LOGIN_URL, nextUrl);
 		if (!isLoggedIn) return NextResponse.redirect(redirect);
 	}
 
@@ -52,9 +63,11 @@ export async function middleware(request: NextRequest) {
 
 		// redirect to the login page with redirect url if the user is not logged in
 		const redirectUrl = `${appRoutePrefix}${DEFAULT_LOGIN_REDIRECT}`;
-		const accessedRoute = encodeURIComponent(redirectUrl);
-		const redirect = new URL(`${nextUrl.pathname}?redirect=${accessedRoute}`, nextUrl);
-		if (!getSearchParams) return NextResponse.redirect(redirect);
+		const accessedRoute = encodeURI(redirectUrl);
+		cookieStore.set("redirect", accessedRoute);
+		const redirect = new URL(nextUrl.pathname, nextUrl);
+		if (!getRedirectUrl && !staticProtectedRoutes.includes(nextUrl.pathname))
+			return NextResponse.redirect(redirect);
 	}
 
 	/**
@@ -67,7 +80,8 @@ export async function middleware(request: NextRequest) {
 		if (nextUrl.pathname.startsWith(url) && isPathMatch(nextUrl.pathname)) {
 			// redirect to the login page if the user is not logged in
 			const accessedRoute = encodeURIComponent(appPrefixPathname);
-			const redirect = new URL(`${DEFAULT_LOGIN_URL}?redirect=${accessedRoute}`, nextUrl);
+			cookieStore.set("redirect", accessedRoute);
+			const redirect = new URL(DEFAULT_LOGIN_URL, nextUrl);
 			if (!isLoggedIn) return NextResponse.redirect(redirect);
 		}
 	});
