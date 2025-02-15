@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 
 import "./globals.css";
 import SessionProvider from "@/providers/session-provider";
-import { SocketProvider } from "@/providers/socket-provider";
 
 const poppins = Poppins({
 	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -28,7 +27,8 @@ export default async function RootLayout({ children }: Readonly<GlobalLayoutProp
 		<html lang="en" suppressHydrationWarning>
 			<body className={cn(poppins.variable, "antialiased")} suppressHydrationWarning>
 				<SessionProvider>
-					<SocketProvider>{children}</SocketProvider>
+					{children}
+					{/* <SocketProvider>{children}</SocketProvider> */}
 				</SessionProvider>
 			</body>
 		</html>
